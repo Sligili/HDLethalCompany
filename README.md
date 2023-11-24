@@ -34,7 +34,7 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
   - ***1*** -> ***MEDIUM*** (*Vanilla distance - Default mod value*)
   - ***2*** -> ***HIGH*** (*Twice the distance*)
 
-- **SHADOW QUALITY:** Set ```ShadowQuality``` to any of the following values ```0``` ```1``` ```2``` ```3``` - modifies the maximun resolution they can reach
+- **SHADOW QUALITY:** Set ```ShadowQuality``` to any of the following values ```0``` ```1``` ```2``` ```3``` - modifies the maximum resolution they can reach
   - ***0*** -> ***VERY LOW*** (*disables shadows*)
   - ***1*** -> ***LOW*** (*256 max resolution*)
   - ***2*** -> ***MEDIUM*** (*1024 max resolution*)
