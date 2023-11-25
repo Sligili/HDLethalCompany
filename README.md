@@ -1,13 +1,15 @@
-# HDLethalCompany V1.4.0 - Sligili | CLIENT SIDE 🎈
+# HDLethalCompany V1.5.0 - Sligili | CLIENT SIDE 🎈
 
 ## INSTALLATION 🛠
-### Extract on the main game folder (where ```Lethal Company.exe``` is located). Make sure you have [BepInEx](https://github.com/BepInEx/BepInEx) and [LC_API](https://thunderstore.io/c/lethal-company/p/2018/LC_API/) installed
+### Extract on the main game folder (where ```Lethal Company.exe``` is located). Make sure you have [BepInEx](https://github.com/BepInEx/BepInEx) installed
 
 ## CONFIGURATION ⚙
 ### Open ```BepInEx/config/HDLethalCompany.cfg``` with a text editor.
 
 📃*This mod maintains the vanilla rendering aspect ratio ***to avoid breaking any HUD elements***.  
 Calculate the value equivalent to your desired resolution -> ```DesiredResolutionWidth/860```*
+
+- **RESOLUTION FIX:** Set ```EnableRes``` to ```true``` or ```false``` - if false, disables my custom resolution method so you can add another resolution mod with a different solution like [this one](https://www.nexusmods.com/lethalcompany/mods/8) or any WideScreen fix
 
 - **RESOLUTION SCALE:** Set ```value``` to any number between ```1.000``` (*or lower*) - ```4.500``` (The UI scanned elements have slightly incorrect offsets after 3.000)
   - ***0.923*** -> ***800x480*** (*Increases performance*)
@@ -40,7 +42,7 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
   - ***2*** -> ***MEDIUM*** (*1024 max resolution*)
   - ***3*** -> ***HIGH*** (*2048 max resolution - Vanilla and default mod value*)
 
-- **POST-PROCESSING:** Set ```EnablePP``` to ```true``` or ```false``` - if false, disables the HDRP Custom Pass, therefore disabling color grading
+- **POST-PROCESSING:** Set ```EnablePP``` to ```true``` or ```false``` - if false, disables the HDRP Custom Pass, therefore disabling color grading 
 
 - **VOLUMETRIC FOG:** Set ```EnableFOG``` to ```true``` or ```false``` - if false, disables the HDRP Volumetric Fog. **Use this as a last resource in case lowering the fog quality is not enough to get decent performance**
 
@@ -48,6 +50,14 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
 
 ## CHANGELOG 🕗
 
+- ***v1.5.0:***
+     - Added a new parameter **Resolution Fix**
+     - Now all cameras will be affected by the settings
+     - Removed LC_API dependency because of bugs
+     - Tweaked the icon
+- ***v1.4.1:***
+     - Mod has a [GitHub](https://github.com/Sligili/HDLethalCompany) now
+     - New icon
 - ***v1.4.0:***
      - Added two new parameters **Level Of Detail** and **Shadow Quality**
      - LC_API now required
@@ -65,7 +75,3 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
      - Read Me formatting :P
 - ***v1.1.1:*** 
      - Fixed some typos
-- ***v1.1.0:*** 
-     - Fixed scanned elements not scaling correctly with the resolution
-- ***v1.0.0:*** 
-     - Release, broken version
