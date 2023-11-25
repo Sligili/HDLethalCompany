@@ -53,7 +53,7 @@ namespace HDLethalCompany
             //Setup Config File
             #region
             config_ResMult = Config.Bind("RESOLUTION", "Value", 2.233f, "Resolution Scale Multiplier - <EXAMPLES -> | 1.000 = 860x520p | 2.233 =~ 1920x1080p | 2.977 = 2560x1440p | 4.465 = 3840x2060p > - The UI scanned elements have slightly incorrect offsets after 3.000");
-            config_EnableResolution = Config.Bind("RESOLUTION", "EnableRes", true, "Toggle Resolution Multiplier - In the case you want to use another solution or apply any widescreen mod");
+            config_EnableResolution = Config.Bind("RESOLUTION", "EnableRes", true, "Resolution Fix - In the case you want to use another solution or apply any widescreen mod");
             config_EnableAntialiasing = Config.Bind("EFFECTS", "EnableAA", false, "Anti-Aliasing (Unity's SMAA)");
             config_EnablePostProcessing = Config.Bind("EFFECTS", "EnablePP", true, "Post-Processing (Color grading)");
             config_TextureQuality = Config.Bind("EFFECTS", "TextureQuality", 3, "Texture Resolution Quality - <PRESETS -> | 0 = VERY LOW (1/8) | 1 = LOW (1/4) | 2 = MEDIUM (1/2) | 3 = HIGH (1/1 VANILLA) >");
@@ -184,43 +184,11 @@ namespace HDLethalCompany.Patch
 
             if (FogQualityflag)
             {
-                Debug.Log("FOGQUALITYMETHODCALLED-----------------------------");
                 SetFogQuality(__instance.playerGraphicsVolume);
                 FogQualityflag = false;
             }
 
-            /*
-            if (m_setFogQuality != 1)
-            {
-                Fog fog;
-                __instance.playerGraphicsVolume.sharedProfile.TryGet<Fog>(out fog);
-                fog.quality.Override(3); //sets preset to custom
-                switch (m_setFogQuality)
-                {
-                    case -1: //VEEERY LOW BackCompat
-
-                        fog.volumetricFogBudget = 0.05f;
-                        fog.resolutionDepthRatio = 0.5f;
-                        break;
-                    case 0: //VEEERY LOW
-
-                        fog.volumetricFogBudget = 0.05f;
-                        fog.resolutionDepthRatio = 0.5f;
-                        break;
-                    case 2: //MEDIUM
-                        fog.volumetricFogBudget = 0.333f;
-                        fog.resolutionDepthRatio = 0.666f;
-                        break;
-                    case 3: //HIGH
-                        fog.volumetricFogBudget = 0.666f;
-                        fog.resolutionDepthRatio = 0.5f;
-                        break;
-                }
-
-                m_setFogQuality = 1;
-
-            }
-            */
+            if (!m_enableResolutionFix) return;
 
             //I just rerun the entire updateScanNodes method basically, far from ideal but at the time i did this i was kinda braindead apparently and thought this was the only way. 
             //Honestly, this part should be remade to improve compatibility (and performance), but sorry, im lazy af.
