@@ -12,6 +12,9 @@ using HDLethalCompany.Tools;
 using System.Reflection;
 using System.IO;
 using UnityEngine.Rendering;
+using UnityEngine.InputSystem;
+using static UnityEngine.Rendering.HighDefinition.CameraSettings;
+using System.Linq;
 
 namespace HDLethalCompany
 {
@@ -94,51 +97,51 @@ namespace HDLethalCompany.Patch
     internal class GraphicsPatch
     {
         //Graphics Settings
-        public static bool 
+        public static bool
             m_enablePostProcessing,
             m_enableFog,
             m_enableAntiAliasing,
             m_enableResolutionFix;
-        public static int 
+        public static int
             m_setFogQuality,
             m_setTextureResolution,
             m_setLOD,
-            m_setShadowQuality; 
+            m_setShadowQuality;
 
         static HDRenderPipelineAsset myAsset;
 
         //Resolution Fix
-            //Anchor offsets
-        public static float 
+        //Anchor offsets
+        public static float
             anchorOffsetX = 439.48f,
             anchorOffsetY = 244.8f,
             anchorOffsetZ;
 
-            //Resolution multiplier
+        //Resolution multiplier
         public static float multiplier;
 
-            //Resolution
-        public static float 
+        //Resolution
+        public static float
             m_widthResolution,
             m_heightResolution;
 
         //Others
-        static bool SetGlobalQualityFlag = true;
-        static bool FogQualityflag=true;
+        static bool
+            SetGlobalQualityFlag = true;
 
         [HarmonyPatch(typeof(PlayerControllerB), "Start")]
         [HarmonyPrefix]
         private static void StartPrefix(PlayerControllerB __instance)
         {
-            //Loading asset bundle from plugins folder
-            AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(Paths.PluginPath, "HDLethalCompany/hdlethalcompany"));
-
-            UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(HDAdditionalCameraData));
-
             if (SetGlobalQualityFlag)
             {
-                Debug.Log("Global quality settings applied");
-   
+                Debug.Log("HDLethalCompany - Applying configs");
+
+                //Loading asset bundle from plugins folder
+                AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(Paths.PluginPath, "HDLethalCompany/hdlethalcompany"));
+
+                UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(HDAdditionalCameraData));
+
                 for (int i = 0; i < array.Length; i++)
                 {
                     HDAdditionalCameraData cameraData = array[i] as HDAdditionalCameraData;
@@ -155,13 +158,18 @@ namespace HDLethalCompany.Patch
 
                     ToggleVolumetricFog(cameraData, m_enableFog);
                 }
+
+                array = null;
+
+                SetGlobalQualityFlag = false;
+
+                SetTextureQuality();
+
+                SetFogQuality();
+
+                Debug.Log("Global quality settings applied");
+
             }
-
-            array = null;
-            
-            SetGlobalQualityFlag = false;
-
-            SetTextureQuality();
 
             if (m_enableResolutionFix)
             {
@@ -171,41 +179,41 @@ namespace HDLethalCompany.Patch
                 __instance.gameplayCamera.targetTexture.width = newWidth;
                 __instance.gameplayCamera.targetTexture.height = newHeight;
             }
+        }
 
-            
+        [HarmonyPatch(typeof(RoundManager), "GenerateNewFloor")]
+        [HarmonyPrefix]
+        private static void RoundPostFix()
+        {
+            //The weather system overrides the fog settings without this
+            SetFogQuality();
+            if (m_setLOD != 0) return;
+            RemoveLodFromGameObject("CatwalkStairs");
+
         }
 
         [HarmonyPatch(typeof(HUDManager), "UpdateScanNodes")]
         [HarmonyPostfix]
         private static void UpdateScanNodesPostfix(PlayerControllerB playerScript, HUDManager __instance)
         {
-            //For some reason scanned elements won't render above this value so i had to limit it.
-            if (anchorOffsetZ > 1.238f) anchorOffsetZ = 1.238f;
 
-            if (FogQualityflag)
-            {
-                SetFogQuality(__instance.playerGraphicsVolume);
-                FogQualityflag = false;
-            }
+            //Scanned elements won't render above this value
+            if (anchorOffsetZ > 1.238f) anchorOffsetZ = 1.238f;
 
             if (!m_enableResolutionFix) return;
 
-            //I just rerun the entire updateScanNodes method basically, far from ideal but at the time i did this i was kinda braindead apparently and thought this was the only way. 
             //Honestly, this part should be remade to improve compatibility (and performance), but sorry, im lazy af.
-
             Vector3 vector = Vector3.zero;
-
             bool flag = false;
             int i = 0;
-
             while (i < __instance.scanElements.Length)
             {
                 ScanNodeProperties scanNodeProperties;
                 if ((Traverse.Create(__instance).Field("scanNodes").GetValue() as Dictionary<RectTransform, ScanNodeProperties>).Count > 0 && (Traverse.Create(__instance).Field("scanNodes").GetValue() as Dictionary<RectTransform, ScanNodeProperties>).TryGetValue(__instance.scanElements[i], out scanNodeProperties) && scanNodeProperties != null)
                 {
                     try
-                    {                    
-                        if((bool)Reflection.CallMethod(__instance, "NodeIsNotVisible", scanNodeProperties, i))
+                    {
+                        if ((bool)Reflection.CallMethod(__instance, "NodeIsNotVisible", scanNodeProperties, i))
                         {
 
                             goto IL_1CA;
@@ -281,8 +289,7 @@ namespace HDLethalCompany.Patch
             }
         }
 
-
-        //QUALITY SETTINGS
+        //QUALITY METHODS
         public static void SetShadowQuality(AssetBundle assetBundle, HDAdditionalCameraData cameraData)
         {
             if (assetBundle == null)
@@ -293,13 +300,13 @@ namespace HDLethalCompany.Patch
 
             cameraData.renderingPathCustomFrameSettingsOverrideMask.mask[(int)FrameSettingsField.ShadowMaps] = true;
 
-            cameraData.renderingPathCustomFrameSettings.SetEnabled(FrameSettingsField.ShadowMaps, m_setShadowQuality==0 ? false:true);
+            cameraData.renderingPathCustomFrameSettings.SetEnabled(FrameSettingsField.ShadowMaps, m_setShadowQuality == 0 ? false : true);
 
             myAsset = (m_setShadowQuality == 1 ? myAsset = assetBundle.LoadAsset<HDRenderPipelineAsset>("Assets/HDLethalCompany/VeryLowShadowsAsset.asset")
-                : (m_setShadowQuality==2 ? myAsset = assetBundle.LoadAsset<HDRenderPipelineAsset>("Assets/HDLethalCompany/MediumShadowsAsset.asset") : (HDRenderPipelineAsset)QualitySettings.renderPipeline));
+                : (m_setShadowQuality == 2 ? myAsset = assetBundle.LoadAsset<HDRenderPipelineAsset>("Assets/HDLethalCompany/MediumShadowsAsset.asset") : (HDRenderPipelineAsset)QualitySettings.renderPipeline));
 
             QualitySettings.renderPipeline = myAsset;
-            
+
         }
 
         public static void SetLevelOfDetail(HDAdditionalCameraData cameraData)
@@ -317,8 +324,8 @@ namespace HDLethalCompany.Patch
             cameraData.renderingPathCustomFrameSettings.lodBiasMode = LODBiasMode.OverrideQualitySettings;
             #endregion
 
-            cameraData.renderingPathCustomFrameSettings.lodBias = m_setLOD == 0 ? 0.6f : 2.3f; 
-            
+            cameraData.renderingPathCustomFrameSettings.lodBias = m_setLOD == 0 ? 0.6f : 2.3f;
+
         }
 
         public static void SetTextureQuality()
@@ -350,12 +357,22 @@ namespace HDLethalCompany.Patch
             cameraData.renderingPathCustomFrameSettings.SetEnabled(FrameSettingsField.Volumetrics, enable);
         }
 
-        public static void SetFogQuality(Volume volume)
+        public static void SetFogQuality()
         {
+
             Fog fog;
-            if(volume.sharedProfile.TryGet<Fog>(out fog))
+
+            UnityEngine.Object[] volumes = Resources.FindObjectsOfTypeAll(typeof(Volume));
+
+            for (int i = 0; i < volumes.Length; i++)
             {
-                fog.quality.Override(3); //Custom level
+
+                Volume vol = volumes[i] as Volume;
+
+                if (!vol.sharedProfile.TryGet<Fog>(out fog)) continue;
+
+                fog.quality.Override(3);
+
                 switch (m_setFogQuality)
                 {
                     case -1: //Old config file used to have this value - Back Compat to old Very Low value
@@ -379,38 +396,50 @@ namespace HDLethalCompany.Patch
                         break;
                 }
             }
-            else
-            {
-                Debug.LogError("HDLETHALCOMPANY: Volume reference is wrong");
-            }
-            
-
-
         }
+
+        //FIXES
+        public static void RemoveLodFromGameObject(string name)
+        {
+            UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(LODGroup));
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                LODGroup lod = array[i] as LODGroup;
+
+                if (!(lod.gameObject.name == name)) continue;
+
+                lod.enabled = false;
+            }
+        }
+
+
     }
 }
 
 namespace HDLethalCompany.Tools
-{
-    public class Reflection
     {
-        public static object GetInstanceField(Type type, object instance, string fieldName)
+        public class Reflection
         {
-            BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-                | BindingFlags.Static;
-            FieldInfo field = type.GetField(fieldName, bindFlags);
-            return field.GetValue(instance);
-        }
-        public static object CallMethod(object instance, string methodName, params object[] args)
-        {
-            var mi = instance.GetType().GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (mi != null)
+            public static object GetInstanceField(Type type, object instance, string fieldName)
             {
-                return mi.Invoke(instance, args);
+                BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+                    | BindingFlags.Static;
+                FieldInfo field = type.GetField(fieldName, bindFlags);
+                return field.GetValue(instance);
             }
-            return null;
+            public static object CallMethod(object instance, string methodName, params object[] args)
+            {
+                var mi = instance.GetType().GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (mi != null)
+                {
+                    return mi.Invoke(instance, args);
+                }
+                return null;
+            }
         }
+
     }
-    
-}
+
+
     
