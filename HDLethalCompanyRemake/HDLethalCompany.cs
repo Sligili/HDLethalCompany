@@ -12,9 +12,6 @@ using HDLethalCompany.Tools;
 using System.Reflection;
 using System.IO;
 using UnityEngine.Rendering;
-using UnityEngine.InputSystem;
-using static UnityEngine.Rendering.HighDefinition.CameraSettings;
-using System.Linq;
 
 namespace HDLethalCompany
 {
@@ -25,11 +22,12 @@ namespace HDLethalCompany
         private static ConfigEntry<float> 
             config_ResMult;
 
-        private static ConfigEntry<bool> 
-            config_EnablePostProcessing, 
-            config_EnableFog, 
+        private static ConfigEntry<bool>
+            config_EnablePostProcessing,
+            config_EnableFog,
             config_EnableAntialiasing,
-            config_EnableResolution;
+            config_EnableResolution,
+            config_EnableFoliage;             
 
         private static ConfigEntry<int> 
             config_FogQuality, 
@@ -46,6 +44,9 @@ namespace HDLethalCompany
 
             ConfigFile();
 
+            //Load asset bundle
+            GraphicsPatch.assetBundle = AssetBundle.LoadFromFile(Path.Combine(Paths.PluginPath, "HDLethalCompany/hdlethalcompany"));
+
             _harmony = new Harmony(PluginInfo.Guid);
             _harmony.PatchAll(typeof(GraphicsPatch));
             
@@ -56,7 +57,7 @@ namespace HDLethalCompany
             //Setup Config File
             #region
             config_ResMult = Config.Bind("RESOLUTION", "Value", 2.233f, "Resolution Scale Multiplier - <EXAMPLES -> | 1.000 = 860x520p | 2.233 =~ 1920x1080p | 2.977 = 2560x1440p | 4.465 = 3840x2060p > - The UI scanned elements have slightly incorrect offsets after 3.000");
-            config_EnableResolution = Config.Bind("RESOLUTION", "EnableRes", true, "Resolution Fix - In the case you want to use another solution or apply any widescreen mod");
+            config_EnableResolution = Config.Bind("RESOLUTION", "EnableRes", true, "Resolution Fix - In case you wanna use another resolution mod or apply any widescreen mod while keeping the graphics settings");
             config_EnableAntialiasing = Config.Bind("EFFECTS", "EnableAA", false, "Anti-Aliasing (Unity's SMAA)");
             config_EnablePostProcessing = Config.Bind("EFFECTS", "EnablePP", true, "Post-Processing (Color grading)");
             config_TextureQuality = Config.Bind("EFFECTS", "TextureQuality", 3, "Texture Resolution Quality - <PRESETS -> | 0 = VERY LOW (1/8) | 1 = LOW (1/4) | 2 = MEDIUM (1/2) | 3 = HIGH (1/1 VANILLA) >");
@@ -64,10 +65,12 @@ namespace HDLethalCompany
             config_EnableFog = Config.Bind("EFFECTS", "EnableFOG", true, "Volumetric Fog Toggle - Use this as a last resource in case lowering the fog quality is not enough to get decent performance");
             config_LOD = Config.Bind("EFFECTS", "LOD", 1, "Level Of Detail - <PRESETS -> | 0 = LOW (HALF DISTANCE) | 1 = VANILLA | 2 = HIGH (TWICE THE DISTANCE) >");
             config_ShadowmapQuality = Config.Bind("EFFECTS", "ShadowQuality", 2, "Shadows Resolution - <PRESETS -> 0 = VERY LOW (SHADOWS DISABLED)| 1 = LOW (256) | 2 = MEDIUM (1024) | 3 = VANILLA (2048) > - Shadowmap max resolution");
+            config_EnableFoliage = Config.Bind("EFFECTS", "EnableF", true, "Foliage Toggle - If the game camera should or not render bushes/grass (trees won't be affected)");
             #endregion
 
             //Load Config File
             #region
+            GraphicsPatch.m_enableFoliage = config_EnableFoliage.Value;
             GraphicsPatch.m_enableResolutionFix = config_EnableResolution.Value;
             GraphicsPatch.m_setShadowQuality = config_ShadowmapQuality.Value;
             GraphicsPatch.m_setLOD = config_LOD.Value;
@@ -88,7 +91,7 @@ namespace HDLethalCompany
         public const string
             Guid = "HDLethalCompany",
             Name = "HDLethalCompany-Sligili",
-            Ver = "1.5.0";
+            Ver = "1.5.1";
     }
 }
 
@@ -101,7 +104,9 @@ namespace HDLethalCompany.Patch
             m_enablePostProcessing,
             m_enableFog,
             m_enableAntiAliasing,
-            m_enableResolutionFix;
+            m_enableResolutionFix,
+            m_enableFoliage=true;
+        
         public static int
             m_setFogQuality,
             m_setTextureResolution,
@@ -109,6 +114,7 @@ namespace HDLethalCompany.Patch
             m_setShadowQuality;
 
         static HDRenderPipelineAsset myAsset;
+        public static AssetBundle assetBundle;
 
         //Resolution Fix
         //Anchor offsets
@@ -126,52 +132,57 @@ namespace HDLethalCompany.Patch
             m_heightResolution;
 
         //Others
-        static bool
-            SetGlobalQualityFlag = true;
 
         [HarmonyPatch(typeof(PlayerControllerB), "Start")]
         [HarmonyPrefix]
         private static void StartPrefix(PlayerControllerB __instance)
         {
-            if (SetGlobalQualityFlag)
+            Debug.Log("HDLethalCompany - Applying configs");
+
+            if (assetBundle != null) Debug.LogWarning("THIS TIME THE ASSET BUNDLE ISNT NULL");
+
+            UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(HDAdditionalCameraData));
+
+            for (int i = 0; i < array.Length; i++)
             {
-                Debug.Log("HDLethalCompany - Applying configs");
+                HDAdditionalCameraData cameraData = array[i] as HDAdditionalCameraData;
 
-                //Loading asset bundle from plugins folder
-                AssetBundle assetBundle = AssetBundle.LoadFromFile(Path.Combine(Paths.PluginPath, "HDLethalCompany/hdlethalcompany"));
+                cameraData.customRenderingSettings = true;
 
-                UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(HDAdditionalCameraData));
+                ToggleCustomPass(cameraData, m_enablePostProcessing);
 
-                for (int i = 0; i < array.Length; i++)
+                SetLevelOfDetail(cameraData);
+
+                ToggleVolumetricFog(cameraData, m_enableFog);
+
+                if (!m_enableFoliage)
                 {
-                    HDAdditionalCameraData cameraData = array[i] as HDAdditionalCameraData;
+                    LayerMask mask = cameraData.GetComponent<Camera>().cullingMask;
+                    
+                    //Layer 10 = Foliage
+                    mask &= ~(1 << 10);
 
-                    cameraData.customRenderingSettings = true;
-
-                    SetShadowQuality(assetBundle, cameraData);
-
-                    SetLevelOfDetail(cameraData);
-
-                    SetAntiAliasing(cameraData);
-
-                    ToggleCustomPass(cameraData, m_enablePostProcessing);
-
-                    ToggleVolumetricFog(cameraData, m_enableFog);
+                    cameraData.GetComponent<Camera>().cullingMask = mask;
                 }
 
-                array = null;
+                SetShadowQuality(assetBundle, cameraData);
 
-                SetGlobalQualityFlag = false;
+                if (cameraData.gameObject.name == "SecurityCamera" || cameraData.gameObject.name == "ShipCamera") continue;
 
-                SetTextureQuality();
+                SetAntiAliasing(cameraData);
 
-                SetFogQuality();
-
-                Debug.Log("Global quality settings applied");
-
+                                      
             }
 
-            if (m_enableResolutionFix)
+            array = null;
+
+            SetTextureQuality();
+
+            SetFogQuality();
+
+            Debug.Log("Global quality settings applied");
+
+            if (m_enableResolutionFix && multiplier!=1.000f)
             {
                 int newWidth = (int)Math.Round(m_widthResolution, 0),
                 newHeight = (int)Math.Round(m_heightResolution, 0);
@@ -192,6 +203,7 @@ namespace HDLethalCompany.Patch
 
         }
 
+        //SCANNER FIX
         [HarmonyPatch(typeof(HUDManager), "UpdateScanNodes")]
         [HarmonyPostfix]
         private static void UpdateScanNodesPostfix(PlayerControllerB playerScript, HUDManager __instance)
@@ -200,7 +212,7 @@ namespace HDLethalCompany.Patch
             //Scanned elements won't render above this value
             if (anchorOffsetZ > 1.238f) anchorOffsetZ = 1.238f;
 
-            if (!m_enableResolutionFix) return;
+            if (!m_enableResolutionFix || multiplier==1.000f) return;
 
             //Honestly, this part should be remade to improve compatibility (and performance), but sorry, im lazy af.
             Vector3 vector = Vector3.zero;
@@ -376,23 +388,25 @@ namespace HDLethalCompany.Patch
                 switch (m_setFogQuality)
                 {
                     case -1: //Old config file used to have this value - Back Compat to old Very Low value
-                        fog.volumetricFogBudget = 0.05f;
-                        fog.resolutionDepthRatio = 0.5f;
+                        if (fog.volumetricFogBudget > 0.05f) fog.volumetricFogBudget = 0.05f;
+                        if (fog.resolutionDepthRatio > 0.5f) fog.resolutionDepthRatio = 0.5f;
                         break;
 
                     case 0: //Very Low
-                        fog.volumetricFogBudget = 0.05f;
-                        fog.resolutionDepthRatio = 0.5f;
+                        if (fog.volumetricFogBudget > 0.05f) fog.volumetricFogBudget = 0.05f;
+                        if (fog.resolutionDepthRatio > 0.5f) fog.resolutionDepthRatio = 0.5f;
                         break;
 
                     case 2: //Medium
-                        fog.volumetricFogBudget = 0.333f;
-                        fog.resolutionDepthRatio = 0.666f;
+
+                        if (fog.volumetricFogBudget > 0.333f) fog.volumetricFogBudget = 0.333f;
+                        if (fog.resolutionDepthRatio > 0.666f) fog.resolutionDepthRatio = 0.666f;
                         break;
 
                     case 3: //High
-                        fog.volumetricFogBudget = 0.666f;
-                        fog.resolutionDepthRatio = 0.5f;
+
+                        if (fog.volumetricFogBudget > 0.666f) fog.volumetricFogBudget = 0.666f;
+                        if (fog.resolutionDepthRatio > 0.5f) fog.resolutionDepthRatio = 0.5f;
                         break;
                 }
             }
@@ -438,7 +452,6 @@ namespace HDLethalCompany.Tools
                 return null;
             }
         }
-
     }
 
 
