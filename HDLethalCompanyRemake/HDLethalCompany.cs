@@ -45,7 +45,7 @@ namespace HDLethalCompany
             ConfigFile();
 
             //Load asset bundle
-            GraphicsPatch.assetBundle = AssetBundle.LoadFromFile(Path.Combine(Paths.PluginPath, "HDLethalCompany/hdlethalcompany"));
+            GraphicsPatch.assetBundle = AssetBundle.LoadFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "HDLethalCompany/hdlethalcompany"));
 
             _harmony = new Harmony(PluginInfo.Guid);
             _harmony.PatchAll(typeof(GraphicsPatch));
@@ -91,7 +91,7 @@ namespace HDLethalCompany
         public const string
             Guid = "HDLethalCompany",
             Name = "HDLethalCompany-Sligili",
-            Ver = "1.5.1";
+            Ver = "1.5.2";
     }
 }
 
@@ -138,8 +138,6 @@ namespace HDLethalCompany.Patch
         private static void StartPrefix(PlayerControllerB __instance)
         {
             Debug.Log("HDLethalCompany - Applying configs");
-
-            if (assetBundle != null) Debug.LogWarning("THIS TIME THE ASSET BUNDLE ISNT NULL");
 
             UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(HDAdditionalCameraData));
 
@@ -306,7 +304,7 @@ namespace HDLethalCompany.Patch
         {
             if (assetBundle == null)
             {
-                Debug.LogError("HDLETHALCOMPANY: Something is wrong with the Asset Bundle");
+                Debug.LogError("HDLETHALCOMPANY: Something is wrong with the Asset Bundle - Null");
                 return;
             }
 
@@ -453,6 +451,5 @@ namespace HDLethalCompany.Tools
             }
         }
     }
-
 
     
