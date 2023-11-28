@@ -43,8 +43,5 @@
         <Reference Include="Unity.RenderPipelines.HighDefinition.Runtime" Private="false">
             <HintPath>$(ManagedPath)\Unity.RenderPipelines.HighDefinition.Runtime.dll</HintPath>
         </Reference>
-        <Reference Include="Unity.TextMeshPro" Private="false">
-            <HintPath>$(ManagedPath)\Unity.TextMeshPro.dll</HintPath>
-        </Reference>
     </ItemGroup>
 </Project>
