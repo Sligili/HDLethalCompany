@@ -1,4 +1,6 @@
-# HDLethalCompany V1.5.0 - Sligili | CLIENT SIDE 🎈
+# HDLethalCompany V1.5.1 - Sligili | CLIENT SIDE 🎈
+
+*From now on updates will be less frequent*
 
 ## INSTALLATION 🛠
 ### Extract on the main game folder (where ```Lethal Company.exe``` is located). Make sure you have [BepInEx](https://github.com/BepInEx/BepInEx) installed
@@ -48,11 +50,18 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
 
 - **ANTI-ALIASING:** Set ```EnableAA``` to ```true``` or ```false``` - if true, enables built-in SMAA
 
+- **FOLIAGE TOGGLE:** Set ```EnableF``` to ```true``` or ```false``` - if false, disables the "Foliage" layer (trees won't be affected, only most bushes and grass)
+
 ## CHANGELOG 🕗
 
+- ***v1.5.1:***
+     - Added a new parameter **Foliage**
+     - Fog Quality won't be overridden by the weather system anymore
+     - Fixed invisible stairs with LOD set to 0
+     - Fixed some settings being reset after leaving a game and joining another
 - ***v1.5.0:***
      - Added a new parameter **Resolution Fix**
-     - Now all cameras will be affected by the settings
+     - Now spectator camera gets all settings applied. Ship cameras only apply lower settings.
      - Removed LC_API dependency because of bugs
      - Tweaked the icon
 - ***v1.4.1:***
