@@ -1,6 +1,4 @@
-# HDLethalCompany V1.5.1 - Sligili | CLIENT SIDE 🎈
-
-*From now on updates will be less frequent*
+# HDLethalCompany V1.5.2 - Sligili | CLIENT SIDE 🎈
 
 ## INSTALLATION 🛠
 ### Extract on the main game folder (where ```Lethal Company.exe``` is located). Make sure you have [BepInEx](https://github.com/BepInEx/BepInEx) installed
@@ -54,6 +52,8 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
 
 ## CHANGELOG 🕗
 
+- ***v1.5.2:***
+     - Now fully compatible with [r2modman](https://thunderstore.io/c/lethal-company/p/ebkr/r2modman/)
 - ***v1.5.1:***
      - Added a new parameter **Foliage**
      - Fog Quality won't be overridden by the weather system anymore
@@ -74,7 +74,6 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
 - ***v1.3.0:***
      - The scanner should work now
      - Added a new parameter **Texture Quality** 
-     - Changes now apply to the spectator camera aswell
      - The DLL has been renamed
 - ***v1.2.0:***
      - SMAA actually works now (UwU)
