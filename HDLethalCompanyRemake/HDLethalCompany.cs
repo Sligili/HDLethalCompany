@@ -64,7 +64,7 @@ namespace HDLethalCompany
             config_FogQuality = Config.Bind("EFFECTS", "FogQuality", 1, "Volumetric Fog Quality - <PRESETS -> | 0 = VERY LOW | 1 = VANILLA FOG | 2 = MEDIUM | 3 = HIGH >");
             config_EnableFog = Config.Bind("EFFECTS", "EnableFOG", true, "Volumetric Fog Toggle - Use this as a last resource in case lowering the fog quality is not enough to get decent performance");
             config_LOD = Config.Bind("EFFECTS", "LOD", 1, "Level Of Detail - <PRESETS -> | 0 = LOW (HALF DISTANCE) | 1 = VANILLA | 2 = HIGH (TWICE THE DISTANCE) >");
-            config_ShadowmapQuality = Config.Bind("EFFECTS", "ShadowQuality", 2, "Shadows Resolution - <PRESETS -> 0 = VERY LOW (SHADOWS DISABLED)| 1 = LOW (256) | 2 = MEDIUM (1024) | 3 = VANILLA (2048) > - Shadowmap max resolution");
+            config_ShadowmapQuality = Config.Bind("EFFECTS", "ShadowQuality", 3, "Shadows Resolution - <PRESETS -> 0 = VERY LOW (SHADOWS DISABLED)| 1 = LOW (256) | 2 = MEDIUM (1024) | 3 = VANILLA (2048) > - Shadowmap max resolution");
             config_EnableFoliage = Config.Bind("EFFECTS", "EnableF", true, "Foliage Toggle - If the game camera should or not render bushes/grass (trees won't be affected)");
             #endregion
 
@@ -91,7 +91,7 @@ namespace HDLethalCompany
         public const string
             Guid = "HDLethalCompany",
             Name = "HDLethalCompany-Sligili",
-            Ver = "1.5.2";
+            Ver = "1.5.3";
     }
 }
 
@@ -137,13 +137,13 @@ namespace HDLethalCompany.Patch
         [HarmonyPrefix]
         private static void StartPrefix(PlayerControllerB __instance)
         {
-            Debug.Log("HDLethalCompany - Applying configs");
-
             UnityEngine.Object[] array = Resources.FindObjectsOfTypeAll(typeof(HDAdditionalCameraData));
 
             for (int i = 0; i < array.Length; i++)
             {
                 HDAdditionalCameraData cameraData = array[i] as HDAdditionalCameraData;
+
+                if (cameraData.gameObject.name == "MapCamera") continue;
 
                 cameraData.customRenderingSettings = true;
 
@@ -177,8 +177,6 @@ namespace HDLethalCompany.Patch
             SetTextureQuality();
 
             SetFogQuality();
-
-            Debug.Log("Global quality settings applied");
 
             if (m_enableResolutionFix && multiplier!=1.000f)
             {
