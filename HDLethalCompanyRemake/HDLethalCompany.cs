@@ -91,7 +91,7 @@ namespace HDLethalCompany
         public const string
             Guid = "HDLethalCompany",
             Name = "HDLethalCompany-Sligili",
-            Ver = "1.5.3";
+            Ver = "1.5.6";
     }
 }
 
@@ -334,6 +334,8 @@ namespace HDLethalCompany.Patch
 
             cameraData.renderingPathCustomFrameSettings.lodBias = m_setLOD == 0 ? 0.6f : 2.3f;
 
+            if (m_setLOD == 0 && cameraData.GetComponent<Camera>().farClipPlane>180) cameraData.GetComponent<Camera>().farClipPlane = 170f;
+
         }
 
         public static void SetTextureQuality()
@@ -372,6 +374,12 @@ namespace HDLethalCompany.Patch
 
             UnityEngine.Object[] volumes = Resources.FindObjectsOfTypeAll(typeof(Volume));
 
+            if (volumes.Length == 0)
+            {
+                Debug.LogError("No volumes found");
+                return;
+            }
+
             for (int i = 0; i < volumes.Length; i++)
             {
 
@@ -384,25 +392,25 @@ namespace HDLethalCompany.Patch
                 switch (m_setFogQuality)
                 {
                     case -1: //Old config file used to have this value - Back Compat to old Very Low value
-                        if (fog.volumetricFogBudget > 0.05f) fog.volumetricFogBudget = 0.05f;
-                        if (fog.resolutionDepthRatio > 0.5f) fog.resolutionDepthRatio = 0.5f;
+                        fog.volumetricFogBudget = 0.05f;
+                        fog.resolutionDepthRatio = 0.5f;
                         break;
 
                     case 0: //Very Low
-                        if (fog.volumetricFogBudget > 0.05f) fog.volumetricFogBudget = 0.05f;
-                        if (fog.resolutionDepthRatio > 0.5f) fog.resolutionDepthRatio = 0.5f;
+                        fog.volumetricFogBudget = 0.05f;
+                        fog.resolutionDepthRatio = 0.5f;
                         break;
 
                     case 2: //Medium
 
-                        if (fog.volumetricFogBudget > 0.333f) fog.volumetricFogBudget = 0.333f;
-                        if (fog.resolutionDepthRatio > 0.666f) fog.resolutionDepthRatio = 0.666f;
+                        fog.volumetricFogBudget = 0.333f;
+                        fog.resolutionDepthRatio = 0.666f;
                         break;
 
                     case 3: //High
 
-                        if (fog.volumetricFogBudget > 0.666f) fog.volumetricFogBudget = 0.666f;
-                        if (fog.resolutionDepthRatio > 0.5f) fog.resolutionDepthRatio = 0.5f;
+                        fog.volumetricFogBudget = 0.666f;
+                        fog.resolutionDepthRatio = 0.5f;
                         break;
                 }
             }

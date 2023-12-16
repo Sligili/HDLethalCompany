@@ -1,4 +1,4 @@
-# HDLethalCompany V1.5.2 - Sligili | CLIENT SIDE 🎈
+# HDLethalCompany V1.5.6 - Sligili | CLIENT SIDE 🎈
 
 ## INSTALLATION 🛠
 ### Extract on the main game folder (where ```Lethal Company.exe``` is located). Make sure you have [BepInEx](https://github.com/BepInEx/BepInEx) installed
@@ -9,7 +9,7 @@
 📃*This mod maintains the vanilla rendering aspect ratio ***to avoid breaking any HUD elements***.  
 Calculate the value equivalent to your desired resolution -> ```DesiredResolutionWidth/860```*
 
-- **RESOLUTION FIX:** Set ```EnableRes``` to ```true``` or ```false``` - if false, disables my custom resolution method so you can add another resolution mod with a different solution like [this one](https://www.nexusmods.com/lethalcompany/mods/8) or any WideScreen fix
+- **RESOLUTION FIX:** Set ```EnableRes``` to ```true``` or ```false``` - if false, disables my custom resolution method so you can use another resolution mod with a different solution like [this one](https://www.nexusmods.com/lethalcompany/mods/8) or use any WideScreen fix
 
 - **RESOLUTION SCALE:** Set ```value``` to any number between ```1.000``` (*or lower*) - ```4.500``` (The UI scanned elements have slightly incorrect offsets after 3.000)
   - ***0.923*** -> ***800x480*** (*Increases performance*)
@@ -52,8 +52,18 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
 
 ## CHANGELOG 🕗
 
+- ***v1.5.6:***
+     - Medium and high fog quality settings now work again
+- ***v1.5.5:***
+     - Fixed black screen with lod 0 👉👈
+- ***v1.5.4:***
+     - LOD setting now decreases draw distance too
+     - Holded a null exception when no volumes where found
+- ***v1.5.3:***
+     - Fixed dark radar, now fully compatible with [Minimap](https://thunderstore.io/c/lethal-company/p/Tyzeron/Minimap/)
+     - Shadow quality default value wasn't supposed to be 2
 - ***v1.5.2:***
-     - Now fully compatible with [r2modman](https://thunderstore.io/c/lethal-company/p/ebkr/r2modman/)
+     - Now fully compatible with [r2modman](https://thunderstore.io/c/lethal-company/p/ebkr/r2modman/) or any mod manager
 - ***v1.5.1:***
      - Added a new parameter **Foliage**
      - Fog Quality won't be overridden by the weather system anymore
@@ -61,7 +71,7 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
      - Fixed some settings being reset after leaving a game and joining another
 - ***v1.5.0:***
      - Added a new parameter **Resolution Fix**
-     - Now spectator camera gets all settings applied. Ship cameras only apply lower settings.
+     - Now the spectator camera gets all settings applied. Ship cameras only apply lower settings.
      - Removed LC_API dependency because of bugs
      - Tweaked the icon
 - ***v1.4.1:***
