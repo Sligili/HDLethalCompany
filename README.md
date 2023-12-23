@@ -50,6 +50,8 @@ Calculate the value equivalent to your desired resolution -> ```DesiredResolutio
 
 - **FOLIAGE TOGGLE:** Set ```EnableF``` to ```true``` or ```false``` - if false, disables the "Foliage" layer (trees won't be affected, only most bushes and grass)
 
+Note: If BepInExPack has been installed through r2modman, the BepInEx folder can be found by in Settings > 'Browse data folder' > LethalCompany/profiles/[r2modman prifle name]/
+
 ## CHANGELOG 🕗
 
 - ***v1.5.6:***
